@@ -629,7 +629,7 @@ elif nav == "🔵 Clasificador de Clusters":
          "Mediana: 44 víctimas, 550k€ pérdida, 18h respuesta, 81 días recuperación"),
         ("🔴 Cluster 1", "Alto impacto humano / Mala gestión", CLUSTER_COLORS[1],
          "Mediana: 40 víctimas, 800k€ pérdida, 19h respuesta, 668 días recuperación"),
-        ("🟢 Cluster 2", "Alto daño económico / Respuesta eficiente", CLUSTER_COLORS[1],
+        ("🟢 Cluster 2", "Alto daño económico / Respuesta eficiente", CLUSTER_COLORS[0], # Nota: Usé índice 0 si es el verde, según tu config
          "Mediana: 7 víctimas, 160k€ pérdida, 8h respuesta, 54 días recuperación"),
     ]
 
@@ -645,28 +645,30 @@ elif nav == "🔵 Clasificador de Clusters":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ── INICIO DEL BLOQUE CORREGIDO (INDENTADO) ───────────────
+    
     # PCA loadings insight
-st.markdown("""
-<div class="insight-box">
-<b>🔬 Interpretación PCA que separa los clusters</b>
-<p>
-<b>PC1</b> (casualties 0.665 · response_hours 0.572 · economic_loss 0.359 · recovery_days 0.318)<br>
-<b>PC2</b> (economic_loss +0.807 · recovery_days +0.200 · response_hours −0.553 · casualties −0.056)
-</p>
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="insight-box">
+    <b>🔬 Interpretación PCA que separa los clusters</b>
+    <p>
+    <b>PC1</b> (casualties 0.665 · response_hours 0.572 · economic_loss 0.359 · recovery_days 0.318)<br>
+    <b>PC2</b> (economic_loss +0.807 · recovery_days +0.200 · response_hours −0.553 · casualties −0.056)
+    </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-col_form, col_result = st.columns([1, 1])
+    col_form, col_result = st.columns([1, 1])
 
-with col_form:
-    st.markdown("#### Introduce los parámetros del evento")
-    casualties3 = st.number_input("💀 Víctimas", 0, 500_000, 100, step=10, key="cl_cas")
-    economic_loss3 = st.number_input("💸 Pérdida económica (€)", 0, 500_000_000, 1_000_000, step=50_000, key="cl_econ")
-    response_hours3 = st.number_input("⏱️ Horas hasta respuesta", 0, 10_000, 48, step=1, key="cl_rh")
-    recovery_days3 = st.number_input("📅 Días de recuperación", 0, 2000, 150, step=5, key="cl_rd")
+    with col_form:
+        st.markdown("#### Introduce los parámetros del evento")
+        casualties3 = st.number_input("💀 Víctimas", 0, 500_000, 100, step=10, key="cl_cas")
+        economic_loss3 = st.number_input("💸 Pérdida económica (€)", 0, 500_000_000, 1_000_000, step=50_000, key="cl_econ")
+        response_hours3 = st.number_input("⏱️ Horas hasta respuesta", 0, 10_000, 48, step=1, key="cl_rh")
+        recovery_days3 = st.number_input("📅 Días de recuperación", 0, 2000, 150, step=5, key="cl_rd")
 
-    st.markdown("---")
-    predict_btn = st.button("🔵 Clasificar Evento", key="btn_cl")
+        st.markdown("---")
+        predict_btn = st.button("🔵 Clasificar Evento", key="btn_cl")
 
     with col_result:
         if predict_btn:
@@ -705,12 +707,32 @@ with col_form:
                                    margin=dict(t=50, b=10))
             st.plotly_chart(fig_prob, use_container_width=True)
 
-            # --- CORRECCIÓN AQUÍ ---
-            # Convertimos el color Hex a RGBA para que Plotly acepte la transparencia
-            # El '28' original (hex) equivale a aproximadamente 0.15 de opacidad decimal
+            # --- CORRECCIÓN DE COLOR (RGBA) PARA EL RADAR ---
             hex_color = color.lstrip('#')
             r = int(hex_color[0:2], 16)
             g = int(hex_color[2:4], 16)
             b = int(hex_color[4:6], 16)
             rgba_fill = f"rgba({r}, {g}, {b}, 0.15)"
-            # -----------------------)
+            # -----------------------------------------------
+
+            # Radar
+            categories = ['Víctimas', 'Pérdida Econ.', 'Horas Resp.', 'Días Recup.']
+            maxvals = [500_000, 500_000_000, 10_000, 2000]
+            vals = [cas/maxvals[0], econ/maxvals[1], rh/maxvals[2], rd/maxvals[3]]
+            fig_radar = go.Figure(go.Scatterpolar(
+                r=vals + [vals[0]],
+                theta=categories + [categories[0]],
+                fill='toself',
+                fillcolor=rgba_fill,
+                line_color=color,
+                name='Evento'
+            ))
+            fig_radar.update_layout(**PLOTLY_TEMPLATE, height=300,
+                                    polar=dict(
+                                        bgcolor='rgba(255,255,255,0.4)',
+                                        radialaxis=dict(visible=True, range=[0, 1],
+                                                        tickfont=dict(color='#7a6a55', size=9)),
+                                        angularaxis=dict(tickfont=dict(color='#3a2e1a'))
+                                    ),
+                                    title='Perfil del evento', showlegend=False)
+            st.plotly_chart(fig_radar, use_container_width=True)
