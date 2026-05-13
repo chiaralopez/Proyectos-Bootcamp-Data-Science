@@ -1,7 +1,7 @@
 # Proyecto 3: Machine Learning
 ## 🌍 Análisis Predictivo de la Gestión de la Ayuda Humanitaria y el Impacto de Desastres a Nivel Global
 
-> Bootcamp Data Science – The Bridge | Bilbao, Febrero-Junio 2026**
+> Bootcamp Data Science – The Bridge | Bilbao, Febrero-Junio 2026
 > Chiara López Palomino
 
 ---
