@@ -1,9 +1,6 @@
-os
-pathlib
 numpy
 pandas
 seaborn
-matplotlib.pyplot
 matplotlib
 plotly
 scikit-learn
